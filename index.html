@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Alcohol Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for better radio button appearance */
+        .segmented-control input[type="radio"] {
+            display: none;
+        }
+        .segmented-control label {
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .segmented-control input[type="radio"]:checked + label {
+            background-color: #3B82F6; /* bg-blue-600 */
+            color: white;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4" style="background-color: #000F3D;">
+
+    <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg">
+        <!-- Alcohol Calculator -->
+        <div class="p-6 md:p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">ML Alcohol Calculator</h1>
+                <p class="text-gray-500 mt-2">How many Miller Lites are in the beer you're drinking?</p>
+            </div>
+            <div class="space-y-6">
+                <!-- Standard Serving Size Section -->
+                <div>
+                    <label class="text-sm font-semibold text-gray-600 mb-2 block">Standard Serving Size</label>
+                    <div class="segmented-control grid grid-cols-3 gap-2 bg-gray-200 p-1 rounded-lg">
+                        <input type="radio" id="size-12" name="servingSize" value="12" checked>
+                        <label for="size-12" class="text-center py-2 px-4 rounded-md font-medium text-gray-700 hover:bg-gray-300">12 oz</label>
+                        
+                        <input type="radio" id="size-16" name="servingSize" value="16">
+                        <label for="size-16" class="text-center py-2 px-4 rounded-md font-medium text-gray-700 hover:bg-gray-300">16 oz</label>
+                        
+                        <input type="radio" id="size-24" name="servingSize" value="24">
+                        <label for="size-24" class="text-center py-2 px-4 rounded-md font-medium text-gray-700 hover:bg-gray-300">24 oz</label>
+                    </div>
+                </div>
+
+                <!-- Custom Serving Size Section -->
+                <div>
+                    <label for="custom-size-input" class="text-sm font-semibold text-gray-600 mb-2 block">Or Enter Custom Size (oz)</label>
+                    <input type="number" id="custom-size-input" placeholder="e.g., 22" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+
+                <!-- ABV Input Section -->
+                <div>
+                    <label for="abv-input" class="text-sm font-semibold text-gray-600 mb-2 block">Alcohol By Volume (ABV)</label>
+                    <div class="relative">
+                        <input type="number" id="abv-input" value="4.2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition pr-8">
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500">%</span>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-lg text-center">
+                     <p class="text-sm font-semibold text-blue-800 mb-1">TOTAL ALCOHOL CONTENT</p>
+                    <div class="flex items-end justify-center text-blue-900">
+                        <span id="total-mls" class="text-5xl font-extrabold tracking-tight">1.00</span>
+                        <span class="text-2xl font-bold ml-2 mb-1">MLs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ALCOHOL CALCULATOR ---
+
+        // DOM Element References
+        const standardSizeRadios = document.querySelectorAll('input[name="servingSize"]');
+        const customSizeInput = document.getElementById('custom-size-input');
+        const abvInput = document.getElementById('abv-input');
+        const totalMLsOutput = document.getElementById('total-mls');
+
+        // Constants
+        const millerLiteAlcoholContent = 12.0 * 0.042;
+
+        // Calculation Logic
+        function calculateMLs() {
+            let servingSize = 0;
+            const customSize = parseFloat(customSizeInput.value);
+            
+            if (customSize > 0) {
+                servingSize = customSize;
+            } else {
+                const checkedRadio = document.querySelector('input[name="servingSize"]:checked');
+                servingSize = checkedRadio ? parseFloat(checkedRadio.value) : 0;
+            }
+
+            const abv = parseFloat(abvInput.value);
+
+            if (isNaN(servingSize) || isNaN(abv) || servingSize <= 0 || abv <= 0 || millerLiteAlcoholContent <= 0) {
+                totalMLsOutput.textContent = "0.00";
+                return;
+            }
+
+            const userBeverageAlcoholContent = servingSize * (abv / 100.0);
+            const totalMLs = userBeverageAlcoholContent / millerLiteAlcoholContent;
+            totalMLsOutput.textContent = totalMLs.toFixed(2);
+        }
+
+        // Event Listeners
+        standardSizeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                customSizeInput.value = '';
+                calculateMLs();
+            });
+        });
+
+        customSizeInput.addEventListener('input', () => {
+            if (customSizeInput.value !== '') {
+                standardSizeRadios.forEach(radio => radio.checked = false);
+            } else {
+                standardSizeRadios[0].checked = true;
+            }
+            calculateMLs();
+        });
+
+        abvInput.addEventListener('input', calculateMLs);
+        document.addEventListener('DOMContentLoaded', calculateMLs);
+    </script>
+
+</body>
+</html>
